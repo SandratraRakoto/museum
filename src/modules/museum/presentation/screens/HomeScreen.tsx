@@ -1,38 +1,56 @@
 import { useAppDispatch } from "@/store/store";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FlatList, SafeAreaView, StyleSheet } from "react-native";
 import { useSelector } from "react-redux";
 import { fetchMuseums } from "@/modules/museum/usecases/fetch-museums.usecase";
-import { selectMuseum } from "@/modules/museum/selectors/museum.selector";
-import Map from "@/modules/museum/presentation/components/Map";
+import {
+  selectCategories,
+  selectMuseum,
+} from "@/modules/museum/selectors/museum.selector";
 import MuseumCard from "@/modules/museum/presentation/components/MuseumCard";
-import SearchInput from "../components/SearchInput";
+import SearchInput from "@/modules/museum/presentation/components/SearchInput";
+import CategoryDropdown from "@/modules/museum/presentation/components/CategoryDropdown";
+import { fetchCategories } from "@/modules/museum/usecases/fetch-categories.usecase";
 
 export default function HomeScreen() {
   const dispatch = useAppDispatch();
 
   const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+
   const handleSearch = (text: string) => {
     setSearch(text);
   };
 
   const { data: museums } = useSelector(selectMuseum);
+  const { data: categories } = useSelector(selectCategories);
+
+  const categoryOptions = useMemo(
+    () =>
+      categories.map((category) => ({
+        label: category.name,
+        value: category.id,
+      })),
+    [categories]
+  );
 
   useEffect(() => {
-    dispatch(fetchMuseums(search));
-  }, [dispatch, search]);
+    dispatch(fetchCategories);
+  }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(fetchMuseums(search, category));
+  }, [dispatch, search, category]);
 
   return (
     <SafeAreaView style={styles.container}>
-      <Map
-        markers={museums.map((museum) => ({
-          latitude: museum.coordinates.lat,
-          longitude: museum.coordinates.lon,
-        }))}
-      />
       <SearchInput value={search} onChange={handleSearch} />
+      <CategoryDropdown
+        value={category}
+        onChange={setCategory}
+        options={categoryOptions}
+      />
       <FlatList
-        horizontal
         data={museums}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => <MuseumCard museum={item} />}
@@ -51,9 +69,6 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   flatList: {
-    position: "absolute",
-    bottom: 0,
-    height: 290,
     backgroundColor: "transparent",
   },
 });

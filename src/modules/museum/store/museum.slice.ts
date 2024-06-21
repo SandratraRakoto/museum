@@ -7,6 +7,11 @@ export const initialState: MuseumModel.State = {
     data: [],
     error: null,
   },
+  categories: {
+    status: "idle",
+    data: [],
+    error: null,
+  },
 };
 
 export const museumSlice = createSlice({
@@ -24,6 +29,18 @@ export const museumSlice = createSlice({
     storeMuseums: (state, action: PayloadAction<MuseumModel.Museum[]>) => {
       state.museums.data = action.payload;
       state.museums.status = "success";
+    },
+    handleCategoriesLoading: (state) => {
+      state.categories.status = "loading";
+      state.categories.error = null;
+    },
+    handleCategoriesError: (state, action: PayloadAction<string>) => {
+      state.categories.status = "error";
+      state.categories.error = action.payload;
+    },
+    storeCategories: (state, action: PayloadAction<MuseumModel.Category[]>) => {
+      state.categories.data = action.payload;
+      state.categories.status = "success";
     },
   },
 });

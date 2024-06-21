@@ -26,9 +26,19 @@ export namespace MuseumModel {
     distance: string;
   };
 
+  export type Category = {
+    id: number;
+    name: string;
+  };
+
   export type State = {
     museums: {
       data: Museum[];
+      status: "idle" | "loading" | "success" | "error";
+      error: string | null;
+    };
+    categories: {
+      data: Category[];
       status: "idle" | "loading" | "success" | "error";
       error: string | null;
     };
